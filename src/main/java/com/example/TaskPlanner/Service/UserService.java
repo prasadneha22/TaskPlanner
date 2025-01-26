@@ -1,7 +1,10 @@
 package com.example.TaskPlanner.Service;
 
 import com.example.TaskPlanner.DTO.LoginDto;
+import com.example.TaskPlanner.DTO.UserDto;
+import com.example.TaskPlanner.Repository.RoleRepository;
 import com.example.TaskPlanner.Repository.UserRepository;
+import com.example.TaskPlanner.entity.Role;
 import com.example.TaskPlanner.entity.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,20 +28,29 @@ public class UserService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    RoleRepository roleRepository;
+
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
-    public Users register(Users users) {
-        Users existingUser = userRepository.findByEmail(users.getEmail());
-        System.out.println(existingUser);
+    public Users register(UserDto registrationDto) {
 
-        if(existingUser != null){
-            throw new IllegalArgumentException("Email already exist");
+        Users existingUser = userRepository.findByEmail(registrationDto.getEmail());
+        if(existingUser!=null){
+            throw new RuntimeException("Email Already Exists!");
         }
-//        if(userRepository.existsByEmail(users.getEmail())){
-//            throw new IllegalArgumentException("Email Already exist");
-//        }
-        users.setPassword(encoder.encode(users.getPassword()));
-        return userRepository.save(users);
+
+        Role role = roleRepository.findById(registrationDto.getRoleId())
+                .orElseThrow(()->new RuntimeException("Role not found!"));
+
+        Users user = new Users();
+        user.setName(registrationDto.getName());
+        user.setEmail(registrationDto.getEmail());
+        user.setPassword(encoder.encode(registrationDto.getPassword()));
+        user.setRole(role);
+        user.setActive(true);
+
+        return userRepository.save(user);
 
     }
 
@@ -62,8 +74,10 @@ public class UserService {
                 response.put("id",user.getId());
                 response.put("email",user.getEmail());
                 response.put("name",user.getName());
-                response.put("role",user.getRole());
+                response.put("role",user.getRole().getRole());
+                response.put("isActive",user.getActive());
                 response.put("token",token);
+
                 return response;
             }
         }catch (Exception e){

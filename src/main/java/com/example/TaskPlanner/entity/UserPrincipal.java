@@ -20,13 +20,13 @@ public class UserPrincipal implements UserDetails {
 
         String role = user.getRole().getRole();
 
-        if(role.equals("ADMIN")){
+        if("ADMIN".equals(role)){
             return List.of(
-                    new SimpleGrantedAuthority("ADMIN"),
-                    new SimpleGrantedAuthority("USER")
+                    new SimpleGrantedAuthority("ROLE_ADMIN"),
+                    new SimpleGrantedAuthority("ROLE_USER")
             );
         }else{
-            return Collections.singleton(new SimpleGrantedAuthority("USER"));
+            return Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
 
         }
 

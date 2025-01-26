@@ -35,8 +35,8 @@ public class JwtService {
         claims.put("id",users.getId());
         claims.put("email",users.getEmail());
         claims.put("name",users.getName());
-        claims.put("role",users.getRole());
-        claims.put("activeStatus",users.getActive());
+        claims.put("role",users.getRole().getRole());
+        claims.put("isActive",users.getActive());
 
         return Jwts.builder()
                 .claims(claims)
@@ -59,6 +59,9 @@ public class JwtService {
 
     public Integer extractUserId(String token){
         return extractClaim(token,claims -> Integer.parseInt(claims.get("id").toString()));
+    }
+    public String extractUserRole(String token){
+        return extractClaim(token,claims -> (String) claims.get("role"));
     }
 
     private <T> T extractClaim(String token, Function<Claims,T> claimResolver){

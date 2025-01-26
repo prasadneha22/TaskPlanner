@@ -1,9 +1,9 @@
 package com.example.TaskPlanner.controller;
 
 import com.example.TaskPlanner.DTO.LoginDto;
+import com.example.TaskPlanner.DTO.UserDto;
 import com.example.TaskPlanner.Service.UserService;
 import com.example.TaskPlanner.entity.Users;
-import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +22,13 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<Users> register(@RequestBody Users user){
-        Users registerUser = userService.register(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(registerUser);
+    public ResponseEntity<Users> register(@RequestBody UserDto registrationDto){
+        try{
+            Users registerUser = userService.register(registrationDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(registerUser);
+        }catch(RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
 
     }
 
