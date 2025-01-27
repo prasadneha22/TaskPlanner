@@ -12,7 +12,7 @@ public class Task {
     private String description;
     private String Status = "PENDING";
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private Users user;
 
