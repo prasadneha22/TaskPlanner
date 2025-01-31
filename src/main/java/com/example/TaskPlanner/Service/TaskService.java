@@ -50,26 +50,26 @@ public class TaskService {
 
     public List<TaskListDto> getAllTasks(String token) {
 
+
+        String userRole = jwtService.extractUserRole(token);
         Integer userId = jwtService.extractUserId(token);
+        System.out.println("User id is : " + userId);
+        System.out.println("role is : " + userRole);
 
-//
+        Users user = userRepository.findById(userId)
+                .orElseThrow(()->new RuntimeException("User not found!!"));
 
-        List<Task> tasks = taskRepository.findAll();
+        List<Task> tasks;
 
-
-        List<TaskListDto> userTasks = tasks.stream()
-                .filter(task->task.getUser().getId().equals(userId))
-                .map(task -> new TaskListDto(task.getTitle(),task.getDescription(),task.getStatus()))
-                .collect(Collectors.toList());
-
-        if(userTasks.isEmpty()){
-            throw new RuntimeException("You dont have permission to access these tasks.");
+        if("ADMIN".equals(userRole)){
+          tasks = taskRepository.findAll();
+        }else {
+            tasks = taskRepository.findByUserId(userId);
         }
-        return userTasks;
 
-
-
-
+        return tasks.stream()
+                .map(task -> new TaskListDto(task.getTitle(), task.getDescription(), task.getStatus()))
+                .collect(Collectors.toList());
 
     }
 }

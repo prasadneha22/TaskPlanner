@@ -25,8 +25,6 @@ public class TaskController {
         if(token.startsWith("Bearer ")){
             token = token.substring(7);
         }
-
-
         try{
             TaskDto taskResponse = taskService.createTask(token,taskDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(taskResponse);
@@ -39,13 +37,20 @@ public class TaskController {
 
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+
+
+//    @PreAuthorize("hasRole('ROLE_USER')")
+//    @PutMapping("/updateTask")
+//    public ResponseEntity<?> updateTask(@RequestHeader("Authorization") String token, @RequestBody )
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/getTasks")
     public ResponseEntity<?> getAllTasks(@RequestHeader("Authorization") String token){
         if(token.startsWith("Bearer ")){
             token = token.substring(7);
         }
         try{
+
             List<TaskListDto> tasks = taskService.getAllTasks(token);
 
             if(tasks.isEmpty()){
