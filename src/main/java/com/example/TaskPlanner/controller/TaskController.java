@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/task")
 public class TaskController {
 
     @Autowired
@@ -38,11 +38,6 @@ public class TaskController {
     }
 
 
-
-//    @PreAuthorize("hasRole('ROLE_USER')")
-//    @PutMapping("/updateTask")
-//    public ResponseEntity<?> updateTask(@RequestHeader("Authorization") String token, @RequestBody )
-
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/getTasks")
     public ResponseEntity<?> getAllTasks(@RequestHeader("Authorization") String token){
@@ -64,4 +59,57 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred!");
         }
     }
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @GetMapping("/{taskId}")
+    public ResponseEntity<TaskListDto> getTaskById(@RequestHeader("Authorization") String token, @PathVariable Integer taskId) {
+
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        TaskListDto taskList = taskService.getTaskById(token, taskId);
+
+        return ResponseEntity.ok(taskList);
+
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping("/update/{taskId}")
+    public ResponseEntity<?> updateTask(@RequestHeader("Authorization") String token, @PathVariable Integer taskId, @RequestBody TaskListDto taskListDto){
+        if(token.startsWith("Bearer ")){
+            token = token.substring(7);
+        }
+
+        try {
+            TaskListDto updatedResponse = taskService.updateTask(token,taskId,taskListDto);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(updatedResponse);
+
+        }catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage() );
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @DeleteMapping("/delete/{taskId}")
+    public ResponseEntity<String> deleteTask(@RequestHeader("Authorization") String token, @PathVariable Integer taskId){
+
+        if(token.startsWith("Bearer ")){
+            token = token.substring(7);
+        }
+        try{
+            taskService.deleteTask(token,taskId);
+            return ResponseEntity.status(HttpStatus.OK).body("Task deleted Successfully.");
+
+        }catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage() );
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+        }
+
+    }
+
+
 }
